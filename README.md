@@ -1,18 +1,19 @@
 # AuthApp
 
-AuthApp is a simple Go project for user registration and authentication using JWT tokens.  
-The project uses **Echo** as a web framework and **GORM** for database interactions.
+AuthApp is a simple authentication API built with Go using Echo and GORM.  
+The project is deployed on **Render** for web hosting and automatic updates from GitHub.
 
-This project is deployed on **Render**, a cloud platform for deploying web services and APIs.
+## Features
+- User registration with JWT authentication
+- Secure token-protected routes
+- PostgreSQL database integration
 
-## 🔧 Features:
-- User registration with unique email validation.
-- JWT token generation.
-- Token verification for protected routes.
+## Deployment
+Deployed on **Render**:  
 
-## 🚀 How to Run the Project Locally:
 
+## How to Run Locally
 1. Clone the repository:
    ```bash
-   git clone https://github.com/your_username/AuthApp.git
+   git clone https://github.com/ARTEM1ii/AuthApp.git
    cd AuthApp
