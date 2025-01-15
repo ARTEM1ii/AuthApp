@@ -3,6 +3,8 @@ package main
 import (
 	"fmt"
 	"log"
+	"os"
+
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
@@ -10,7 +12,7 @@ import (
 var DB *gorm.DB
 
 func InitDB() {
-	dsn := "host=localhost user=postgres password=leyla dbname=postgres port=5432 sslmode=disable"
+	dsn := os.Getenv("DATABASE_URL")
 	var err error
 	DB, err = gorm.Open(postgres.Open(dsn), &gorm.Config{})
 	if err != nil {
@@ -20,7 +22,7 @@ func InitDB() {
 	fmt.Println("Database connection successful!")
 
 	DB.AutoMigrate(&User{})
-	fmt.Println("✅ User table created or updated!")
+	fmt.Println("User table created or updated!")
 }
 
 type User struct {
