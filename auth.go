@@ -21,6 +21,33 @@ func GenereteJWT(userID uint) (string, error) {
 	return token.SignedString(jwtSecret)
 }
 
+func Login(c echo.Context) error {
+	loginRequest := new(LoginRequest)
+	if err := c.Bind(loginRequest); err != nil {
+		return c.JSON(http.StatusBadRequest, map[string]string{"error": "Invalid input"})
+	}
+	
+	var user User
+	if err := DB.Where("email = ?", loginRequest.Email).First(&user).Error; err != nil {
+		return c.JSON(http.StatusUnauthorized, map[string]string{"error": "Invalid email or password"})
+	}
+
+	err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(loginRequest.Password))
+	if err != nil {
+		return c.JSON(http.StatusUnauthorized, map[string]string{"error": "Invalid email or password"})
+	}
+
+	token, err := GenereteJWT(user.ID)
+	if err != nil {
+		fmt.Println("Error generating token:", err)
+		return c.String(http.StatusInternalServerError, "Error generating token")
+	}
+
+	return c.JSON(http.StatusOK, map[string]string{
+		"message": "Login succesful",
+		"token": token,
+	})
+}
 
 func Register(c echo.Context) error {
 	user := new(User)

@@ -11,7 +11,6 @@ import (
 var DB *gorm.DB
 
 func InitDB() {
-
 	dsn := "postgresql://globaldb_4p6p_user:UKWQNnGrtmiOTCK7WJnEXTYN4h2uGMfP@dpg-cu3vuni3esus73c2lhlg-a.oregon-postgres.render.com/globaldb_4p6p"
 
 	var err error
