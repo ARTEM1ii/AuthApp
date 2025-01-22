@@ -8,6 +8,7 @@ import (
 func SetupRoutes(e *echo.Echo) {
 	e.POST("/register", Register)
 	e.GET("/protected", ProtectedRoute, VerifyJWT)
+	// e.POST("/login", login)
 }
 
 

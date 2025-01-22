@@ -6,6 +6,7 @@ import (
 	"time"
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/labstack/echo/v4"
+	"golang.org/x/crypto/bcrypt"
 )
 
 var jwtSecret = []byte("your-secret-key")
@@ -28,13 +29,11 @@ func Register(c echo.Context) error {
 		return c.String(http.StatusBadRequest, "Invalid input")
 	}
 	
-	var existingUser User
-	res := DB.Where("email = ?", user.Email).First(&existingUser)
-	if res.Error == nil {
-		return c.JSON(http.StatusConflict, map[string]string{
-			"error": "User with this email already exists",
-		})
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(user.Password), bcrypt.DefaultCost)
+	if err != nil {
+		return c.String(http.StatusInternalServerError, "Error hashing password")
 	}
+	user.Password = string(hashedPassword)
 
 	result := DB.Create(&user)						//Сохраняем в базу данных
 	if result.Error != nil {
@@ -52,7 +51,6 @@ func Register(c echo.Context) error {
 		"token":   token,
 	})
 }
-
 
 func VerifyJWT(next echo.HandlerFunc) echo.HandlerFunc {
 	return func(c echo.Context) error {
