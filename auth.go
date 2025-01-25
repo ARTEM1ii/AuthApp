@@ -3,7 +3,9 @@ package main
 import (
 	"fmt"
 	"net/http"
+	"os"
 	"time"
+
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/labstack/echo/v4"
 	"golang.org/x/crypto/bcrypt"
@@ -79,7 +81,79 @@ func Register(c echo.Context) error {
 	})
 }
 
-func VerifyJWT(next echo.HandlerFunc) echo.HandlerFunc {
+func News(c echo.Context) error {
+	// Привязываем данные title и description
+	task := new(Task)
+	if err := c.Bind(task); err != nil {
+		return c.JSON(http.StatusBadRequest, map[string]string{
+			"error": "Invalid input data",
+		})
+	}
+
+	// Получение файла из запроса
+	file, err := c.FormFile("file")
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, map[string]string{
+			"error": "File is required",
+		})
+	}
+
+	// Открываем файл
+	src, err := file.Open()
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, map[string]string{
+			"error": "Failed to open file",
+		})
+	}
+	defer src.Close()
+
+	// Создаем папку для загрузки, если она не существует
+	uploadDir := "./uploads"
+	if _, err := os.Stat(uploadDir); os.IsNotExist(err) {
+		if err := os.Mkdir(uploadDir, 0755); err != nil {
+			return c.JSON(http.StatusInternalServerError, map[string]string{
+				"error": "Failed to create upload directory",
+			})
+		}
+	}
+
+	// Сохраняем файл
+	filePath := uploadDir + "/" + file.Filename
+	dst, err := os.Create(filePath)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, map[string]string{
+			"error": "Failed to save file",
+		})
+	}
+	defer dst.Close()
+
+	// Копируем содержимое файла
+	if _, err := dst.ReadFrom(src); err != nil {
+		return c.JSON(http.StatusInternalServerError, map[string]string{
+			"error": "Failed to write file",
+		})
+	}
+
+	// Добавляем путь к картинке в задачу
+	task.Picture = "/uploads/" + file.Filename
+
+	// Сохраняем данные в базу
+	if err := DB.Create(&task).Error; err != nil {
+		return c.JSON(http.StatusInternalServerError, map[string]string{
+			"error": "Failed to save task to the database",
+		})
+	}
+
+	// Возвращаем успешный ответ
+	return c.JSON(http.StatusOK, map[string]interface{}{
+		"message":     "News created successfully",
+		"title":       task.Title,
+		"description": task.Description,
+		"picture_url": task.Picture,
+	})
+}
+
+func VerifyJWT(next echo.HandlerFunc) echo.HandlerFunc {	
 	return func(c echo.Context) error {
 		tokenString := c.Request().Header.Get("Authorization")
 		if tokenString == "" {

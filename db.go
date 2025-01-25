@@ -22,7 +22,7 @@ func InitDB() {
 	fmt.Println("Database connection successful!")
 
 
-	DB.AutoMigrate(&User{})
+	DB.AutoMigrate(&User{}, &Task{})
 	fmt.Println("User table created or updated!")
 }
 
@@ -31,6 +31,12 @@ type User struct {
 	Name     string `json:"name"`
 	Email    string `json:"email" gorm:"unique"`
 	Password string `json:"password"`
+}
+
+type Task struct {
+	Title       string `json:"title" gorm:"primaryKey"`
+	Description string `json:"description"`
+	Picture     string `json:"picture"`
 }
 
 type LoginRequest struct{
